@@ -1,9 +1,13 @@
 language: node_js
+sudo: false
+git:
+  submodules: false
+  depth: 3
 node_js:
-  - "0.8"
-  - "0.10"
+  - "4"
+  - "8"
 before_script:
-  - npm install istanbul coveralls
-  - npm install --dev
-script: npm run travis-test
+  - npm install
+script:
+  - npm test
 

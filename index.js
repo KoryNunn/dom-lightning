@@ -1,381 +1,577 @@
 
+/**
+ * @version    0.5.1
+ * @date       2016-07-26
+ * @stability  2 - Unstable
+ * @author     Lauri Rooden <lauri@rooden.ee>
+ * @license    MIT License
+ */
 
+var eventNames = [
+  'onblur',
+  'onerror',
+  'onfocus',
+  'onload',
+  'onresize',
+  'onscroll',
+  'onbeforeunload',
+  'onhashchange',
+  'onlanguagechange',
+  'onmessage',
+  'onoffline',
+  'ononline',
+  'onpagehide',
+  'onpageshow',
+  'onpopstate',
+  'onstorage',
+  'onunload',
+  'onabort',
+  'oncancel',
+  'oncanplay',
+  'oncanplaythrough',
+  'onchange',
+  'onclick',
+  'onclose',
+  'oncontextmenu',
+  'oncuechange',
+  'ondblclick',
+  'ondrag',
+  'ondragend',
+  'ondragenter',
+  'ondragleave',
+  'ondragover',
+  'ondragstart',
+  'ondrop',
+  'ondurationchange',
+  'onemptied',
+  'onended',
+  'oninput',
+  'oninvalid',
+  'onkeydown',
+  'onkeypress',
+  'onkeyup',
+  'onloadeddata',
+  'onloadedmetadata',
+  'onloadstart',
+  'onmousedown',
+  'onmouseenter',
+  'onmouseleave',
+  'onmousemove',
+  'onmouseout',
+  'onmouseover',
+  'onmouseup',
+  'onmousewheel',
+  'onpause',
+  'onplay',
+  'onplaying',
+  'onprogress',
+  'onratechange',
+  'onreset',
+  'onseeked',
+  'onseeking',
+  'onselect',
+  'onshow',
+  'onstalled',
+  'onsubmit',
+  'onsuspend',
+  'ontimeupdate',
+  'ontoggle',
+  'onvolumechange',
+  'onwaiting',
+  'onautocomplete',
+  'onautocompleteerror',
+  'onbeforecopy',
+  'onbeforecut',
+  'onbeforepaste',
+  'oncopy',
+  'oncut',
+  'onpaste',
+  'onsearch',
+  'onselectstart',
+  'onwheel',
+  'onwebkitfullscreenchange',
+  'onwebkitfullscreenerror'
+];
 
-/*
-* @version    0.1.5
-* @date       2014-09-03
-* @stability  2 - Unstable
-* @author     Lauri Rooden <lauri@rooden.ee>
-* @license    MIT License
-*/
+// Void elements: http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
+var voidElements = {
+  AREA: 1,
+  BASE: 1,
+  BR: 1,
+  COL: 1,
+  EMBED: 1,
+  HR: 1,
+  IMG: 1,
+  INPUT: 1,
+  KEYGEN: 1,
+  LINK: 1,
+  MENUITEM: 1,
+  META: 1,
+  PARAM: 1,
+  SOURCE: 1,
+  TRACK: 1,
+  WBR: 1
+};
+var hasOwn = Object.prototype.hasOwnProperty;
+var selector = require('selector-lite');
+var elementGetters = {
+  getElementById: function (id) {
+    return selector.find(this, '#' + id, 1);
+  },
+  getElementsByTagName: function (tag) {
+    return selector.find(this, tag);
+  },
+  getElementsByClassName: function (sel) {
+    return selector.find(this, '.' + sel.replace(/\s+/g, '.'));
+  },
+  querySelector: function (sel) {
+    return selector.find(this, sel, 1);
+  },
+  querySelectorAll: function (sel) {
+    return selector.find(this, sel);
+  }
+};
 
-var hasOwn = Object.prototype.hasOwnProperty
+var VALUE = Symbol('value');
+var EVENTS = Symbol('events');
 
-function escape(string) {
-	return string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+function emit (target, eventName) {
+  target[EVENTS] && target[EVENTS][eventName] && target[EVENTS][eventName].map(function (handler) {
+    handler({ target: target });
+  }, target);
 }
 
-function extend(obj, _super, extras) {
-	obj.prototype = Object.create(_super.prototype)
-	for (var key in extras) {
-		obj.prototype[key] = extras[key]
-	}
-	obj.prototype.constructor = obj
-}
-
-function StyleMap(style) {
-	var self = this
-	if (style) style.split(/\s*;\s*/g).map(function(val) {
-		val = val.split(/\s*:\s*/)
-		if(val[1]) self[val[0]] = val[1]
-	})
-}
-
-StyleMap.prototype.valueOf = function() {
-	var self = this
-	return Object.keys(self).map(function(key) {
-		return key + ": " + self[key]
-	}).join("; ")
-}
-
-function Node(){}
+function Node () {}
 
 Node.prototype = {
-	nodeName:        null,
-	parentNode:      null,
-	ownerDocument:   null,
-	childNodes:      null,
-	get nodeValue() {
-		return this.nodeType === 3 || this.nodeType === 8 ? this.data : null
-	},
-	set nodeValue(text) {
-		return this.nodeType === 3 || this.nodeType === 8 ? (this.data = text) : null
-	},
-	get textContent() {
-		return this.hasChildNodes() ? this.childNodes.map(function(child){
-			return child[ child.nodeType == 3 ? "data" : "textContent" ]
-		}).join("") : this.nodeType === 3 ? this.data : ""
-	},
-	set textContent(text) {
-		if(this.nodeType === 3) return this.data = text
-		for (var self = this; self.firstChild;) self.removeChild(self.firstChild)
-		self.appendChild(self.ownerDocument.createTextNode(text))
-	},
-	get firstChild() {
-		return this.childNodes && this.childNodes[0] || null
-	},
-	get lastChild() {
-		return this.childNodes[ this.childNodes.length - 1 ] || null
-	},
-	get previousSibling() {
-		var self = this
-		, childs = self.parentNode && self.parentNode.childNodes
-		, index = childs && childs.indexOf(self) || 0
-
-		return index > 0 && childs[ index - 1 ] || null
-	},
-	get nextSibling() {
-		var self = this
-		, childs = self.parentNode && self.parentNode.childNodes
-		, index = childs && childs.indexOf(self) || 0
-
-		return childs && childs[ index + 1 ] || null
-	},
-	get innerHTML() {
-		return Node.prototype.toString.call(this)
-	},
-	get outerHTML() {
-		return this.toString()
-	},
-	get htmlFor() {
-		return this["for"]
-	},
-	set htmlFor(value) {
-		this["for"] = value
-	},
-	get className() {
-		return this["class"] || ""
-	},
-	set className(value) {
-		this["class"] = value
-	},
-	get style() {
-		return this.styleMap || (this.styleMap = new StyleMap())
-	},
-	set style(value) {
-		this.styleMap = new StyleMap(value)
-	},
-	hasChildNodes: function() {
-		return this.childNodes && this.childNodes.length > 0
-	},
-	appendChild: function(el) {
-		return this.insertBefore(el)
-	},
-	insertBefore: function(el, ref) {
-		var self = this
-		, childs = self.childNodes
-
-		if (el.nodeType == 11) {
-			while (el.firstChild) self.insertBefore(el.firstChild, ref)
-		} else {
-			if (el.parentNode) el.parentNode.removeChild(el)
-			el.parentNode = self
-
-			// If ref is null, insert el at the end of the list of children.
-			childs.splice(ref ? childs.indexOf(ref) : childs.length, 0, el)
-		}
-		return el
-	},
-	removeChild: function(el) {
-		var self = this
-		, index = self.childNodes.indexOf(el)
-		if (index == -1) throw new Error("NOT_FOUND_ERR")
-
-		self.childNodes.splice(index, 1)
-		el.parentNode = null
-		return el
-	},
-	replaceChild: function(el, ref) {
-		this.insertBefore(el, ref)
-		return this.removeChild(ref)
-	},
-	cloneNode: function(deep) {
-		var key
-		, self = this
-		, node = new self.constructor(self.tagName || self.data)
-		node.ownerDocument = self.ownerDocument
-
-		if (self.hasAttribute) {
-			for (key in self) if (self.hasAttribute(key)) node[key] = self[key].valueOf()
-		}
-
-		if (deep && self.hasChildNodes()) {
-			self.childNodes.forEach(function(child){
-				node.appendChild(child.cloneNode(deep))
-			})
-		}
-		return node
-	},
-	toString: function() {
-		return this.hasChildNodes() ? this.childNodes.reduce(function (memo, node) {
-			return memo + node
-		}, "") : escape(this.data || "")
-	}
-}
-
-
-function DocumentFragment() {
-	this.childNodes = []
-}
-
-extend(DocumentFragment, Node, {
-	nodeType: 11,
-	nodeName: "#document-fragment"
-})
-
-function Attribute(node, name) {
-	this.name = name
-
-	Object.defineProperty(this, "value", {
-		get: function() {return node.getAttribute(name)},
-		set: function(val) {node.setAttribute(name, val)}
-	})
-}
-Attribute.prototype.toString = function() {
-	return this.name + '="' + this.value.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '"'
-}
-
-function HTMLElement(tag) {
-	var self = this
-	self.nodeName = self.tagName = tag.toUpperCase()
-	self.localName = tag.toLowerCase()
-	self.childNodes = []
-}
-
-var elRe = /([.#:[])([-\w]+)(?:=([-\w]+)])?]?/g
-
-function findEl(node, sel, first) {
-	var el
-	, i = 0
-	, out = []
-	, rules = ["_"]
-	, tag = sel.replace(elRe, function(_, o, s, v) {
-		rules.push(
-			o == "." ? "(' '+_.className+' ').indexOf(' "+s+" ')>-1" :
-			o == "#" ? "_.id=='"+s+"'" :
-			"_.getAttribute('"+s+"')"+(v?"=='"+v+"'":"")
-		)
-		return ""
-	}) || "*"
-	, els = node.getElementsByTagName(tag)
-	, fn = Function("_", "return " + rules.join("&&"))
-
-	for (; el = els[i++]; ) if (fn(el)) {
-		if (first) return el
-		out.push(el)
-	}
-	return first ? null : out
-}
-
-/*
-* Void elements:
-* http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
-*/
-var voidElements = {
-	AREA:1, BASE:1, BR:1, COL:1, EMBED:1, HR:1, IMG:1, INPUT:1,
-	KEYGEN:1, LINK:1, MENUITEM:1, META:1, PARAM:1, SOURCE:1, TRACK:1, WBR:1
-}
-
-extend(HTMLElement, Node, {
-	namespaceURI: "http://www.w3.org/1999/xhtml",
-	nodeType: 1,
-	localName: null,
-	tagName: null,
-	styleMap: null,
-	hasAttribute: function(name) {
-		// HACK
-		return name == "style" && !!this.style.valueOf() ||
-			hasOwn.call(this, name) && this[name] !== "" && !(name in HTMLElement.prototype)
-	},
-	getAttribute: function(name) {
-		return this.hasAttribute(name) ? "" + this[name] : null
-	},
-	setAttribute: function(name, value) {
-		this[name] = "" + value
-	},
-	removeAttribute: function(name) {
-		this[name] = ""
-		delete this[name]
-	},
-	getElementById: function(id) {
-		if (this.id == id) return this
-		for (var el, found, i = 0; !found && (el = this.childNodes[i++]);) {
-			if (el.nodeType == 1) found = el.getElementById(id)
-		}
-		return found || null
-	},
-	getElementsByTagName: function(tag) {
-		var el, els = [], next = this.firstChild
-		tag = tag === "*" ? 1 : tag.toUpperCase()
-		for (var i = 0, key = tag === 1 ? "nodeType" : "nodeName"; (el = next); ) {
-			if (el[key] === tag) els[i++] = el
-			next = el.firstChild || el.nextSibling
-			while (!next && (el = el.parentNode)) next = el.nextSibling
-		}
-		return els
-	},
-	querySelector: function(sel) {
-		return findEl(this, sel, 1)
-	},
-	querySelectorAll: function(sel) {
-		return findEl(this, sel)
-	},
-	toString: function() {
-		var attrs = this.attributes.join(" ")
-		return "<" + this.localName + (attrs ? " " + attrs : "") + ">"
-			+ (voidElements[this.tagName] ? "" : this.innerHTML + "</" + this.localName + ">" )
-	}
-})
-
-Object.defineProperty(HTMLElement.prototype, "attributes", {
-	get: function() {
-		var key
-		, attrs = []
-		, self = this
-		for (key in self) if (self.hasAttribute(key)) attrs.push(new Attribute(self, key))
-		return attrs
-	}
-})
-
-function ElementNS(namespace, tag) {
-	var self = this
-	self.namespaceURI = namespace
-	self.nodeName = self.tagName = self.localName = tag
-	self.childNodes = []
-}
-
-ElementNS.prototype = HTMLElement.prototype
-
-function Text(data) {
-	this.data = data
-}
-
-extend(Text, Node, {
-	nodeType: 3,
-	nodeName: "#text"
-})
-
-Object.defineProperty(Text.prototype, 'data', {
-  get: function() { return this.__data__; },
-  set: function(data) {
-  	if(data == null){
-		data = '';
-	}
-	this.__data__ = '' + data;
+  ELEMENT_NODE: 1,
+  TEXT_NODE: 3,
+  PROCESSING_INSTRUCTION_NODE: 7,
+  COMMENT_NODE: 8,
+  DOCUMENT_NODE: 9,
+  DOCUMENT_TYPE_NODE: 10,
+  DOCUMENT_FRAGMENT_NODE: 11,
+  nodeName: null,
+  parentNode: null,
+  ownerDocument: null,
+  childNodes: null,
+  get nodeValue () {
+    return this.nodeType === 3 || this.nodeType === 8 ? this.data : null;
   },
-  enumerable: true,
-  configurable: true
+  set nodeValue (text) {
+    return this.nodeType === 3 || this.nodeType === 8 ? (this.data = text) : null;
+  },
+  get textContent () {
+    return this.hasChildNodes() ? this.childNodes.map(function (child) {
+      return child[child.nodeType === 3 ? 'data' : 'textContent'];
+    }).join('') : this.nodeType === 3 ? this.data : '';
+  },
+  set textContent (text) {
+    if (this.nodeType === 3) return (this.data = text);
+    for (var node = this; node.firstChild;) node.removeChild(node.firstChild);
+    node.appendChild(node.ownerDocument.createTextNode(text));
+  },
+  get firstChild () {
+    return this.childNodes ? this.childNodes[0] : null;
+  },
+  get lastChild () {
+    return this.childNodes ? this.childNodes[this.childNodes.length - 1] : null;
+  },
+  get previousSibling () {
+    return getSibling(this, -1);
+  },
+  get nextSibling () {
+    return getSibling(this, 1);
+  },
+  // innerHTML and outerHTML should be extensions to the Element interface
+  get innerHTML () {
+    return Node.prototype.toString.call(this);
+  },
+  set innerHTML (html) {
+    var match; var child
+        ; var node = this
+        ; var doc = node.ownerDocument || node
+        ; var tagRe = /<(!--([\s\S]*?)--|!\[[\s\S]*?\]|[?!][\s\S]*?)>|<(\/?)([^ />]+)([^>]*?)(\/?)>|[^<]+/mg
+        ; var attrRe = /([^= ]+)\s*=\s*(?:("|')((?:\\?.)*?)\2|(\S+))/g;
+
+    for (; node.firstChild;) node.removeChild(node.firstChild);
+
+    for (; (match = tagRe.exec(html));) {
+      if (match[3]) {
+        node = node.parentNode;
+      } else if (match[4]) {
+        child = doc.createElement(match[4]);
+        if (match[5]) {
+          match[5].replace(attrRe, setAttr);
+        }
+        node.appendChild(child);
+        if (!voidElements[child.tagName] && !match[6]) node = child;
+      } else if (match[2]) {
+        node.appendChild(doc.createComment(htmlUnescape(match[2])));
+      } else if (match[1]) {
+        node.appendChild(doc.createDocumentType(match[1]));
+      } else {
+        node.appendChild(doc.createTextNode(htmlUnescape(match[0])));
+      }
+    }
+
+    return html;
+
+    function setAttr (_, name, q, a, b) {
+      child.setAttribute(name, htmlUnescape(a || b || ''));
+    }
+  },
+  get outerHTML () {
+    return this.toString();
+  },
+  set outerHTML (html) {
+    var frag = this.ownerDocument.createDocumentFragment();
+    frag.innerHTML = html;
+    this.parentNode.replaceChild(frag, this);
+    return html;
+  },
+  get htmlFor () {
+    return this.for;
+  },
+  set htmlFor (value) {
+    this.for = value;
+  },
+  get className () {
+    return this.class || '';
+  },
+  set className (value) {
+    this.class = value;
+  },
+  get style () {
+    return this.styleMap || (this.styleMap = new StyleMap());
+  },
+  set style (value) {
+    this.styleMap = new StyleMap(value);
+  },
+  get value () {
+    return this[VALUE] || '';
+  },
+  set value (value) {
+    this[VALUE] = value == null ? '' : String(value);
+  },
+  hasChildNodes: function () {
+    return this.childNodes && this.childNodes.length > 0;
+  },
+  appendChild: function (el) {
+    return this.insertBefore(el);
+  },
+  insertBefore: function (el, ref) {
+    var node = this;
+    var childs = node.childNodes;
+
+    if (el.nodeType === 11) {
+      while (el.firstChild) node.insertBefore(el.firstChild, ref);
+    } else {
+      if (el.parentNode) el.parentNode.removeChild(el);
+      el.parentNode = node;
+
+      // If ref is null, insert el at the end of the list of children.
+      childs.splice(ref ? childs.indexOf(ref) : childs.length, 0, el);
+      // TODO:2015-07-24:lauri:update document.body and document.documentElement
+    }
+    return el;
+  },
+  removeChild: function (el) {
+    var node = this;
+    var index = node.childNodes.indexOf(el);
+    if (index === -1) throw new Error('NOT_FOUND_ERR');
+
+    node.childNodes.splice(index, 1);
+    el.parentNode = null;
+    return el;
+  },
+  replaceChild: function (el, ref) {
+    this.insertBefore(el, ref);
+    return this.removeChild(ref);
+  },
+  remove: function () {
+    if (this.parentNode) {
+      this.parentNode.removeChild(this);
+    }
+  },
+  addEventListener: function (eventName, handler) {
+    this[EVENTS] = this[EVENTS] || {};
+    this[EVENTS][eventName] = this[EVENTS][eventName] || [];
+    this[EVENTS][eventName].push(handler);
+  },
+  removeEventListener: function (eventName, handler) {
+    this[EVENTS] && this[EVENTS][eventName] && this[EVENTS][eventName].splice(
+      this[EVENTS][eventName].indexOf(handler), 1
+    );
+  },
+  click: function () {
+    emit(this, 'click');
+  },
+  cloneNode: function (deep) {
+    var key;
+    var node = this;
+    var clone = new node.constructor(node.tagName || node.data);
+    clone.ownerDocument = node.ownerDocument;
+
+    if (node.hasAttribute) {
+      for (key in node) if (node.hasAttribute(key)) clone[key] = node[key].valueOf();
+    }
+
+    if (deep && node.hasChildNodes()) {
+      node.childNodes.forEach(function (child) {
+        clone.appendChild(child.cloneNode(deep));
+      });
+    }
+    return clone;
+  },
+  toString: function () {
+    return this.hasChildNodes() ? this.childNodes.reduce(function (memo, node) {
+      return memo + node;
+    }, '') : '';
+  }
+};
+
+eventNames.map(function (eventName) {
+  Node.prototype[eventName] = undefined;
 });
 
-function Comment(data) {
-	this.data = data
+function extendNode (obj, extras) {
+  obj.prototype = Object.create(Node.prototype);
+  for (var descriptor, key, i = 1; (extras = arguments[i++]);) {
+    for (key in extras) {
+      descriptor = Object.getOwnPropertyDescriptor(extras, key);
+      Object.defineProperty(obj.prototype, key, descriptor);
+    }
+  }
+  obj.prototype.constructor = obj;
 }
 
-extend(Comment, Node, {
-	nodeType: 8,
-	nodeName: "#comment",
-	toString: function() {
-		return "<!--" + this.data + "-->"
-	}
-})
+function camelCase (str) {
+  return str.replace(/[ _-]+([a-z])/g, function (_, a) { return a.toUpperCase(); });
+}
 
-Object.defineProperty(Comment.prototype, 'data', {
-  get: function() { return this.__data__; },
-  set: function(data) {
-  	if(data == null){
-		data = '';
-	}
-	this.__data__ = '' + data;
-  },
-  enumerable: true,
-  configurable: true
+function hyphenCase (str) {
+  return str.replace(/[A-Z]/g, '-$&').toLowerCase();
+}
+
+function htmlEscape (str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function htmlUnescape (str) {
+  return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+}
+
+function StyleMap (style) {
+  var styleMap = this;
+  if (style) {
+    style.split(/\s*;\s*/g).map(function (val) {
+      val = val.split(/\s*:\s*/);
+      if (val[1]) styleMap[val[0] === 'float' ? 'cssFloat' : camelCase(val[0])] = val[1];
+    });
+  }
+
+  return new Proxy(this, {
+    get: (target, key) => {
+      if (key === Symbol.toPrimitive) {
+        return () => Object.keys(target).map(key => [hyphenCase(key === 'cssFloat' ? 'float' : key), target[key]].join(': ')).join('; ');
+      }
+      if (key === 'valueOf') {
+        return +target;
+      }
+      if (key === 'toString') {
+        return target.valueOf;
+      }
+      if (key in String.prototype) {
+        return String.prototype[key].bind(target.toString());
+      }
+      return target[key] == null ? '' : target[key];
+    },
+    set: (target, key, value) => {
+      target[key] = String(value);
+    }
+  });
+}
+
+StyleMap.prototype.valueOf = function () {
+  var styleMap = this;
+  return Object.keys(styleMap).map(function (key) {
+    return (key === 'cssFloat' ? 'float: ' : hyphenCase(key) + ': ') + styleMap[key];
+  }).join('; ');
+};
+
+function getSibling (node, step) {
+  var silbings = node.parentNode && node.parentNode.childNodes;
+  var index = silbings && silbings.indexOf(node);
+
+  return silbings && index > -1 ? silbings[index + step] : null;
+}
+
+function DocumentFragment () {
+  this.childNodes = [];
+}
+
+extendNode(DocumentFragment, {
+  nodeType: 11,
+  nodeName: '#document-fragment'
 });
 
-function Document(){
-	this.body = this.createElement("body")
+function Attr (node, name) {
+  this.ownerElement = node;
+  this.name = name.toLowerCase();
 }
 
-function own(Element) {
-	return function($1, $2) {
-		var node = new Element($1, $2)
-		node.ownerDocument = this
-		return node
-	}
+Attr.prototype = {
+  get value () { return this.ownerElement.getAttribute(this.name); },
+  set value (val) { this.ownerElement.setAttribute(this.name, val); },
+  toString: function () {
+    return this.name + '="' + htmlEscape(this.value) + '"';
+  }
+};
+
+function escapeAttributeName (name) {
+  name = name.toLowerCase();
+  if (name === 'constructor' || name === 'attributes') return name.toUpperCase();
+  return name;
 }
 
-function body(getter) {
-	return function(value) {
-		return this.body[getter](value)
-	}
+function Element (tag) {
+  var element = this;
+  element.nodeName = element.tagName = tag.toUpperCase();
+  element.localName = tag.toLowerCase();
+  element.childNodes = [];
+}
+HTMLElement.prototype = Object.create(Node.prototype);
+HTMLElement.prototype.constructor = HTMLElement;
+
+extendNode(Element, elementGetters, {
+  get attributes () {
+    var key;
+    var attrs = [];
+    var element = this;
+    for (key in element) {
+      if (key === escapeAttributeName(key) && element.hasAttribute(key)) { attrs.push(new Attr(element, escapeAttributeName(key))); }
+    }
+    return attrs;
+  },
+  matches: function (sel) {
+    return selector.matches(this, sel);
+  },
+  closest: function (sel) {
+    return selector.closest(this, sel);
+  },
+  namespaceURI: 'http://www.w3.org/1999/xhtml',
+  nodeType: 1,
+  localName: null,
+  tagName: null,
+  styleMap: null,
+  hasAttribute: function (name) {
+    name = escapeAttributeName(name);
+    return name !== 'style' ? hasOwn.call(this, name)
+      : !!(this.styleMap && Object.keys(this.styleMap).length);
+  },
+  getAttribute: function (name) {
+    name = escapeAttributeName(name);
+    return this.hasAttribute(name) ? '' + this[name] : null;
+  },
+  setAttribute: function (name, value) {
+    this[escapeAttributeName(name)] = '' + value;
+  },
+  removeAttribute: function (name) {
+    name = escapeAttributeName(name);
+    this[name] = '';
+    delete this[name];
+  },
+  toString: function () {
+    var attrs = this.attributes.join(' ');
+    return '<' + this.localName + (attrs ? ' ' + attrs : '') + '>' +
+        (voidElements[this.tagName] ? '' : this.innerHTML + '</' + this.localName + '>');
+  }
+});
+
+function HTMLElement (tag) {
+  Element.call(this, tag);
 }
 
-extend(Document, Node, {
-	nodeType: 9,
-	nodeName: "#document",
-	createElement: own(HTMLElement),
-	createElementNS: own(ElementNS),
-	createTextNode: own(Text),
-	createComment: own(Comment),
-	createDocumentFragment: own(DocumentFragment),
-	getElementById: body("getElementById"),
-	getElementsByTagName: body("getElementsByTagName"),
-	querySelector: body("querySelector"),
-	querySelectorAll: body("querySelectorAll")
-})
+HTMLElement.prototype = Object.create(Element.prototype);
+HTMLElement.prototype.constructor = HTMLElement;
+
+function ElementNS (namespace, tag) {
+  var element = this;
+  element.namespaceURI = namespace;
+  element.nodeName = element.tagName = element.localName = tag;
+  element.childNodes = [];
+}
+
+ElementNS.prototype = HTMLElement.prototype;
+
+function Text (data) {
+  this.data = data;
+}
+
+extendNode(Text, {
+  nodeType: 3,
+  nodeName: '#text',
+  toString: function () {
+    return htmlEscape('' + this.data);
+  }
+});
+
+function Comment (data) {
+  this.data = data;
+}
+
+extendNode(Comment, {
+  nodeType: 8,
+  nodeName: '#comment',
+  toString: function () {
+    return '<!--' + this.data + '-->';
+  }
+});
+
+function DocumentType (data) {
+  this.data = data;
+}
+
+extendNode(DocumentType, {
+  nodeType: 10,
+  toString: function () {
+    return '<' + this.data + '>';
+  }
+});
+
+function Document () {
+  this.childNodes = [];
+  this.documentElement = this.createElement('html');
+  this.appendChild(this.documentElement);
+  this.body = this.createElement('body');
+  this.documentElement.appendChild(this.body);
+}
+
+function own (Element) {
+  return function ($1, $2) {
+    var node = new Element($1, $2);
+    node.ownerDocument = this;
+    return node;
+  };
+}
+
+extendNode(Document, elementGetters, {
+  nodeType: 9,
+  nodeName: '#document',
+  createElement: own(HTMLElement),
+  createElementNS: own(ElementNS),
+  createTextNode: own(Text),
+  createComment: own(Comment),
+  createDocumentType: own(DocumentType), // Should be document.implementation.createDocumentType(name, publicId, systemId)
+  createDocumentFragment: own(DocumentFragment)
+});
 
 module.exports = {
-	document: new Document,
-	Document: Document,
-	HTMLElement: HTMLElement
-}
-
+  document: new Document(),
+  StyleMap: StyleMap,
+  Node: Node,
+  Element: Element,
+  HTMLElement: HTMLElement,
+  Document: Document
+};

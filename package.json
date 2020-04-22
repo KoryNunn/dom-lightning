@@ -1,26 +1,31 @@
 {
   "name": "dom-lite",
-  "version": "0.1.5",
-  "stability": 2,
+  "version": "20.2.0",
   "license": "MIT",
   "author": "Lauri Rooden <lauri@rooden.ee>",
-  "description": "A minimal DOM implementation",
+  "description": "A small DOM implementation",
   "keywords": [
-    "dom"
+    "browser",
+    "document",
+    "dom",
+    "litejs"
   ],
   "main": "index.js",
   "readmeFilename": "README.md",
+  "files": [
+    "index.js"
+  ],
   "scripts": {
-    "build": "node node_modules/buildman/index.js --all",
-    "travis-test": "istanbul cover ./tests/index.js && (coveralls < coverage/lcov.info || exit 0)",
-    "test": "node tests/index.js"
+    "test": "node test"
   },
   "repository": "git://github.com/litejs/dom-lite.git",
   "bugs": {
     "url": "https://github.com/litejs/dom-lite/issues"
   },
+  "dependencies": {
+    "selector-lite": "20.2.0"
+  },
   "devDependencies": {
-    "buildman": "*",
-    "tape": "2.12.x"
+    "tape": "^4.13.2"
   }
 }
