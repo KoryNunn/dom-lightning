@@ -1,7 +1,6 @@
 # dom-lightning
-========
 
-A refactor of dom-lite with some stuff added.
+A refactor of [dom-lite](https://github.com/litejs/dom-lite) with some stuff added.
 
 ## Development
 
