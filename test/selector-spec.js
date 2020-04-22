@@ -45,48 +45,48 @@ test('getElementById, getElementsByTagName, getElementsByClassName, querySelecto
   t.equal(result.length, 1);
   t.equal(result[0], el221);
 
-  t.equal(document.getElementsByClassName('findme')
+  t.deepEqual(document.getElementsByClassName('findme')
     , [el21, el221]);
 
-  t.equal(document.querySelector('html'), document.documentElement);
-  t.equal(document.querySelector('body'), document.body);
+  t.deepEqual(document.querySelector('html'), document.documentElement);
+  t.deepEqual(document.querySelector('body'), document.body);
 
-  t.equal(document.querySelector('span'), el221);
-  t.equal(document.querySelector('#22'), el22);
-  t.equal(document.querySelector('div#22'), el22);
-  t.equal(document.querySelector('span#22'), null);
+  t.deepEqual(document.querySelector('span'), el221);
+  t.deepEqual(document.querySelector('#22'), el22);
+  t.deepEqual(document.querySelector('div#22'), el22);
+  t.deepEqual(document.querySelector('span#22'), null);
 
-  t.equal(document.querySelector('.findme'), el21);
-  t.equal(document.querySelector('.not_found'), null);
-  t.equal(document.querySelector('div.findme'), el21);
-  t.equal(document.querySelector('div.not_found'), null);
-  t.equal(document.querySelector('span.first'), null);
-  t.equal(document.querySelector('span.not_found'), null);
-  t.equal(document.querySelector('#21.findme'), el21);
-  t.equal(document.querySelector('div#21.findme'), el21);
+  t.deepEqual(document.querySelector('.findme'), el21);
+  t.deepEqual(document.querySelector('.not_found'), null);
+  t.deepEqual(document.querySelector('div.findme'), el21);
+  t.deepEqual(document.querySelector('div.not_found'), null);
+  t.deepEqual(document.querySelector('span.first'), null);
+  t.deepEqual(document.querySelector('span.not_found'), null);
+  t.deepEqual(document.querySelector('#21.findme'), el21);
+  t.deepEqual(document.querySelector('div#21.findme'), el21);
 
-  t.equal(document.querySelectorAll('div')
+  t.deepEqual(document.querySelectorAll('div')
     , [el1, el11, el12, el2, el21, el22, el222, el3]);
 
-  t.equal(document.querySelectorAll('.findme')
+  t.deepEqual(document.querySelectorAll('.findme')
     , [el21, el221]);
 
-  t.equal(document.querySelectorAll('span.findme')
+  t.deepEqual(document.querySelectorAll('span.findme')
     , [el221]);
 
-  t.equal(document.querySelectorAll('html')
+  t.deepEqual(document.querySelectorAll('html')
     , [document.documentElement]);
 
-  t.equal(document.querySelectorAll('body')
+  t.deepEqual(document.querySelectorAll('body')
     , [document.body]);
 
-  t.equal(document.querySelectorAll('span.findme, div.findme')
+  t.deepEqual(document.querySelectorAll('span.findme, div.findme')
     , [el21, el221]);
 
-  t.equal(document.querySelectorAll('body span.findme, div.findme')
+  t.deepEqual(document.querySelectorAll('body span.findme, div.findme')
     , [el21, el221]);
 
-  t.equal(el1.querySelectorAll('div')
+  t.deepEqual(el1.querySelectorAll('div')
     , [el11, el12]);
 
   t.end();
@@ -288,49 +288,49 @@ test(':nth-child selector', function (t) {
   var p8 = appendElement('p8', el, 'p');
   var p9 = appendElement('p9', el, 'p');
 
-  t.equal(el.querySelectorAll(':nth-child(2n)')
+  t.deepEqual(el.querySelectorAll(':nth-child(2n)')
     , [p2, p4, p6, p8]);
 
-  t.equal(el.querySelectorAll(':nth-child(even)')
+  t.deepEqual(el.querySelectorAll(':nth-child(even)')
     , [p2, p4, p6, p8]);
 
-  t.equal(el.querySelectorAll(':nth-child(2n+1)')
+  t.deepEqual(el.querySelectorAll(':nth-child(2n+1)')
     , [p1, p3, p5, p7, p9]);
 
-  t.equal(el.querySelectorAll(':nth-child(odd)')
+  t.deepEqual(el.querySelectorAll(':nth-child(odd)')
     , [p1, p3, p5, p7, p9]);
 
-  t.equal(el.querySelectorAll(':nth-child(3n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-child(3n+3)')
     , [p3, p6, p9]);
 
-  t.equal(el.querySelectorAll(':nth-child(4n+1)')
+  t.deepEqual(el.querySelectorAll(':nth-child(4n+1)')
     , [p1, p5, p9]);
 
-  t.equal(el.querySelectorAll(':nth-child(4n+4)')
+  t.deepEqual(el.querySelectorAll(':nth-child(4n+4)')
     , [p4, p8]);
 
-  t.equal(el.querySelectorAll(':nth-child(4n)')
+  t.deepEqual(el.querySelectorAll(':nth-child(4n)')
     , [p4, p8]);
 
-  t.equal(el.querySelectorAll(':nth-child(0n+1)')
+  t.deepEqual(el.querySelectorAll(':nth-child(0n+1)')
     , [p1]);
 
-  t.equal(el.querySelectorAll(':nth-child(1)')
+  t.deepEqual(el.querySelectorAll(':nth-child(1)')
     , [p1]);
 
-  t.equal(el.querySelectorAll(':nth-child(3)')
+  t.deepEqual(el.querySelectorAll(':nth-child(3)')
     , [p3]);
 
-  t.equal(el.querySelectorAll(':nth-child(5n-2)')
+  t.deepEqual(el.querySelectorAll(':nth-child(5n-2)')
     , [p3, p8]);
 
-  t.equal(el.querySelectorAll(':nth-child(-n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-child(-n+3)')
     , [p1, p2, p3]);
 
-  t.equal(el.querySelectorAll(':nth-child(-2n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-child(-2n+3)')
     , [p1, p3]);
 
-  t.equal(el.querySelectorAll(':nth-child(-2n+4)')
+  t.deepEqual(el.querySelectorAll(':nth-child(-2n+4)')
     , [p2, p4]);
 
   t.end();
@@ -349,52 +349,52 @@ test(':nth-last-child selector', function (t) {
   var p8 = appendElement('p8', el, 'p');
   var p9 = appendElement('p9', el, 'p');
 
-  t.equal(el.querySelectorAll(':nth-last-child(2n)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(2n)')
     , [p2, p4, p6, p8]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(even)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(even)')
     , [p2, p4, p6, p8]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(2n+1)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(2n+1)')
     , [p1, p3, p5, p7, p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(odd)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(odd)')
     , [p1, p3, p5, p7, p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(3n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(3n+3)')
     , [p1, p4, p7]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(4n+1)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(4n+1)')
     , [p1, p5, p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(4n+4)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(4n+4)')
     , [p2, p6]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(4n)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(4n)')
     , [p2, p6]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(0n+1)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(0n+1)')
     , [p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(0n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(0n+3)')
     , [p7]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(1)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(1)')
     , [p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(3)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(3)')
     , [p7]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(5n-2)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(5n-2)')
     , [p2, p7]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(-n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(-n+3)')
     , [p7, p8, p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(-2n+3)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(-2n+3)')
     , [p7, p9]);
 
-  t.equal(el.querySelectorAll(':nth-last-child(-2n+4)')
+  t.deepEqual(el.querySelectorAll(':nth-last-child(-2n+4)')
     , [p6, p8]);
 
   t.end();
@@ -411,10 +411,10 @@ test(':lang() selector', function (t) {
   el.lang = 'en';
   p2.lang = 'fr-be';
 
-  t.equal(el.querySelectorAll(':lang(en)')
+  t.deepEqual(el.querySelectorAll(':lang(en)')
     , [p1, p3]);
 
-  t.equal(el.querySelectorAll(':lang(fr)')
+  t.deepEqual(el.querySelectorAll(':lang(fr)')
     , [p2, p4]);
 
   t.end();

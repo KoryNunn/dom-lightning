@@ -79,6 +79,28 @@ test('can create elements with namespace', function (t) {
   t.end();
 });
 
+test('can set style parameters', function (t) {
+  var el = document.createElement('div');
+
+  t.equal(el.hasAttribute('style'), false);
+  t.equal(el.hasAttribute('Style'), false);
+
+  el.style = 'top: 1px; background-color: red; float: right';
+  t.equal(el.hasAttribute('style'), true);
+  t.equal(el.hasAttribute('Style'), true);
+  t.equal(el.style.top, '1px');
+  t.equal(el.style.cssFloat, 'right');
+  t.equal(el.style.backgroundColor, 'red');
+
+  el.style.backgroundColor = 'blue';
+  el.style.cssFloat = 'left';
+
+  t.equal(el.style.top, '1px');
+  t.equal(el.style.backgroundColor, 'blue');
+  t.equal(el.style + '', 'top: 1px; background-color: blue; float: left');
+  t.end();
+});
+
 test('can clone HTMLElements', function (t) {
   var el = document.createElement('a');
 
@@ -105,33 +127,7 @@ test('can clone HTMLElements', function (t) {
   testAttr('href', '#123');
   testAttr('href', 'http://example.com');
 
-  t.end();
-});
-
-test('can set style parameters', function (t) {
-  var el = document.createElement('div');
-
-  t.equal(el.hasAttribute('style'), false);
-  t.equal(el.hasAttribute('Style'), false);
-
-  el.style = 'top: 1px; background-color: red; float: right';
-  t.equal(el.hasAttribute('style'), true);
-  t.equal(el.hasAttribute('Style'), true);
-  t.equal(el.style.top, '1px');
-  t.equal(el.style.cssFloat, 'right');
-  t.equal(el.style.backgroundColor, 'red');
-
-  el.style.backgroundColor = 'blue';
-  el.style.cssFloat = 'left';
-
-  t.equal(el.style.top, '1px');
-  t.equal(el.style.backgroundColor, 'blue');
-  t.equal(el.style + '', 'top: 1px; background-color: blue; float: left');
-  t.end();
-});
-
-test('can clone HTMLElements', function (t) {
-  var el, clone, deepClone;
+  var clone, deepClone;
 
   el = document.createElement('h1');
   el.appendChild(document.createElement('img'));

@@ -172,16 +172,24 @@ Node.prototype = {
     node.appendChild(node.ownerDocument.createTextNode(text));
   },
   get firstChild () {
-    return this.childNodes ? this.childNodes[0] : null;
+    if (!this.childNodes) {
+      return null;
+    }
+
+    return this.childNodes[0] || null;
   },
   get lastChild () {
-    return this.childNodes ? this.childNodes[this.childNodes.length - 1] : null;
+    if (!this.childNodes) {
+      return null;
+    }
+
+    return this.childNodes[this.childNodes.length - 1] || null;
   },
   get previousSibling () {
-    return getSibling(this, -1);
+    return getSibling(this, -1) || null;
   },
   get nextSibling () {
-    return getSibling(this, 1);
+    return getSibling(this, 1) || null;
   },
   // innerHTML and outerHTML should be extensions to the Element interface
   get innerHTML () {
@@ -314,7 +322,11 @@ Node.prototype = {
     clone.ownerDocument = node.ownerDocument;
 
     if (node.hasAttribute) {
-      for (key in node) if (node.hasAttribute(key)) clone[key] = node[key].valueOf();
+      for (key in node) {
+        if (node.hasAttribute(key)) {
+          clone[key] = node[key].valueOf();
+        }
+      }
     }
 
     if (deep && node.hasChildNodes()) {
@@ -371,19 +383,17 @@ function StyleMap (style) {
     });
   }
 
-  return new Proxy(this, {
+  function toPrimitive () {
+    return Object.keys(this).map(key => [hyphenCase(key === 'cssFloat' ? 'float' : key), this[key]].join(': ')).join('; ');
+  }
+
+  var proxy = new Proxy(this, {
     get: (target, key) => {
-      if (key === Symbol.toPrimitive) {
-        return () => Object.keys(target).map(key => [hyphenCase(key === 'cssFloat' ? 'float' : key), target[key]].join(': ')).join('; ');
-      }
-      if (key === 'valueOf') {
-        return +target;
-      }
-      if (key === 'toString') {
-        return target.valueOf;
+      if (key === Symbol.toPrimitive || key === 'valueOf' || key === 'toString') {
+        return toPrimitive.bind(target);
       }
       if (key in String.prototype) {
-        return String.prototype[key].bind(target.toString());
+        return String.prototype[key].bind(proxy);
       }
       return target[key] == null ? '' : target[key];
     },
@@ -391,6 +401,8 @@ function StyleMap (style) {
       target[key] = String(value);
     }
   });
+
+  return proxy;
 }
 
 StyleMap.prototype.valueOf = function () {

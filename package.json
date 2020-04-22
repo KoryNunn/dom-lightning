@@ -16,7 +16,7 @@
     "index.js"
   ],
   "scripts": {
-    "test": "node test"
+    "test": "c8 --check-coverage --lines 100 node test"
   },
   "repository": "git://github.com/litejs/dom-lite.git",
   "bugs": {
@@ -26,6 +26,7 @@
     "selector-lite": "20.2.0"
   },
   "devDependencies": {
+    "c8": "^7.1.0",
     "tape": "^4.13.2"
   }
 }
