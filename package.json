@@ -8,16 +8,15 @@
     "dom"
   ],
   "main": "index.js",
-  "readmeFilename": "README.md",
-  "files": [
-    "index.js"
-  ],
   "scripts": {
     "lint": "semistandard",
     "unit": "c8 --check-coverage --lines 100 node test",
     "test": "npm run unit && npm run lint"
   },
-  "repository": "git://github.com/korynunn/dom-lightning.git",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/korynunn/dom-lightning.git"
+  },
   "bugs": {
     "url": "https://github.com/korynunn/dom-lightning/issues"
   },
@@ -28,5 +27,9 @@
     "c8": "^7.1.0",
     "semistandard": "^14.2.0",
     "tape": "^4.13.2"
+  },
+  "homepage": "https://github.com/korynunn/dom-lightning#readme",
+  "directories": {
+    "test": "test"
   }
 }
