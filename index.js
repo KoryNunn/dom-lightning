@@ -141,7 +141,9 @@ function emit (target, eventName) {
   }, target);
 }
 
-function Node () {}
+function Node () {
+  throw new Error('Illegal constructor');
+}
 
 Node.prototype = {
   ELEMENT_NODE: 1,
@@ -179,10 +181,6 @@ Node.prototype = {
     return this.childNodes[0] || null;
   },
   get lastChild () {
-    if (!this.childNodes) {
-      return null;
-    }
-
     return this.childNodes[this.childNodes.length - 1] || null;
   },
   get previousSibling () {
@@ -392,10 +390,12 @@ function StyleMap (style) {
       if (key === Symbol.toPrimitive || key === 'valueOf' || key === 'toString') {
         return toPrimitive.bind(target);
       }
+
       if (key in String.prototype) {
         return String.prototype[key].bind(proxy);
       }
-      return target[key] == null ? '' : target[key];
+
+      return target[key];
     },
     set: (target, key, value) => {
       target[key] = String(value);
@@ -405,18 +405,11 @@ function StyleMap (style) {
   return proxy;
 }
 
-StyleMap.prototype.valueOf = function () {
-  var styleMap = this;
-  return Object.keys(styleMap).map(function (key) {
-    return (key === 'cssFloat' ? 'float: ' : hyphenCase(key) + ': ') + styleMap[key];
-  }).join('; ');
-};
-
 function getSibling (node, step) {
   var silbings = node.parentNode && node.parentNode.childNodes;
   var index = silbings && silbings.indexOf(node);
 
-  return silbings && index > -1 ? silbings[index + step] : null;
+  return silbings[index + step] || null;
 }
 
 function DocumentFragment () {
