@@ -1,97 +1,4 @@
-
-/**
- * @version    0.5.1
- * @date       2016-07-26
- * @stability  2 - Unstable
- * @author     Lauri Rooden <lauri@rooden.ee>
- * @license    MIT License
- */
-
-var eventNames = [
-  'onblur',
-  'onerror',
-  'onfocus',
-  'onload',
-  'onresize',
-  'onscroll',
-  'onbeforeunload',
-  'onhashchange',
-  'onlanguagechange',
-  'onmessage',
-  'onoffline',
-  'ononline',
-  'onpagehide',
-  'onpageshow',
-  'onpopstate',
-  'onstorage',
-  'onunload',
-  'onabort',
-  'oncancel',
-  'oncanplay',
-  'oncanplaythrough',
-  'onchange',
-  'onclick',
-  'onclose',
-  'oncontextmenu',
-  'oncuechange',
-  'ondblclick',
-  'ondrag',
-  'ondragend',
-  'ondragenter',
-  'ondragleave',
-  'ondragover',
-  'ondragstart',
-  'ondrop',
-  'ondurationchange',
-  'onemptied',
-  'onended',
-  'oninput',
-  'oninvalid',
-  'onkeydown',
-  'onkeypress',
-  'onkeyup',
-  'onloadeddata',
-  'onloadedmetadata',
-  'onloadstart',
-  'onmousedown',
-  'onmouseenter',
-  'onmouseleave',
-  'onmousemove',
-  'onmouseout',
-  'onmouseover',
-  'onmouseup',
-  'onmousewheel',
-  'onpause',
-  'onplay',
-  'onplaying',
-  'onprogress',
-  'onratechange',
-  'onreset',
-  'onseeked',
-  'onseeking',
-  'onselect',
-  'onshow',
-  'onstalled',
-  'onsubmit',
-  'onsuspend',
-  'ontimeupdate',
-  'ontoggle',
-  'onvolumechange',
-  'onwaiting',
-  'onautocomplete',
-  'onautocompleteerror',
-  'onbeforecopy',
-  'onbeforecut',
-  'onbeforepaste',
-  'oncopy',
-  'oncut',
-  'onpaste',
-  'onsearch',
-  'onselectstart',
-  'onwheel',
-  'onwebkitfullscreenchange',
-  'onwebkitfullscreenerror'
-];
+var eventNames = require('./eventNames');
 
 // Void elements: http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
 var voidElements = {
@@ -141,7 +48,9 @@ function emit (target, eventName) {
   }, target);
 }
 
-function Node () {}
+function Node () {
+  throw new Error('Illegal constructor');
+}
 
 Node.prototype = {
   ELEMENT_NODE: 1,
@@ -172,16 +81,20 @@ Node.prototype = {
     node.appendChild(node.ownerDocument.createTextNode(text));
   },
   get firstChild () {
-    return this.childNodes ? this.childNodes[0] : null;
+    if (!this.childNodes) {
+      return null;
+    }
+
+    return this.childNodes[0] || null;
   },
   get lastChild () {
-    return this.childNodes ? this.childNodes[this.childNodes.length - 1] : null;
+    return this.childNodes[this.childNodes.length - 1] || null;
   },
   get previousSibling () {
-    return getSibling(this, -1);
+    return getSibling(this, -1) || null;
   },
   get nextSibling () {
-    return getSibling(this, 1);
+    return getSibling(this, 1) || null;
   },
   // innerHTML and outerHTML should be extensions to the Element interface
   get innerHTML () {
@@ -314,7 +227,11 @@ Node.prototype = {
     clone.ownerDocument = node.ownerDocument;
 
     if (node.hasAttribute) {
-      for (key in node) if (node.hasAttribute(key)) clone[key] = node[key].valueOf();
+      for (key in node) {
+        if (node.hasAttribute(key)) {
+          clone[key] = node[key].valueOf();
+        }
+      }
     }
 
     if (deep && node.hasChildNodes()) {
@@ -371,40 +288,35 @@ function StyleMap (style) {
     });
   }
 
-  return new Proxy(this, {
+  function toPrimitive () {
+    return Object.keys(this).map(key => [hyphenCase(key === 'cssFloat' ? 'float' : key), this[key]].join(': ')).join('; ');
+  }
+
+  var proxy = new Proxy(this, {
     get: (target, key) => {
-      if (key === Symbol.toPrimitive) {
-        return () => Object.keys(target).map(key => [hyphenCase(key === 'cssFloat' ? 'float' : key), target[key]].join(': ')).join('; ');
+      if (key === Symbol.toPrimitive || key === 'valueOf' || key === 'toString') {
+        return toPrimitive.bind(target);
       }
-      if (key === 'valueOf') {
-        return +target;
-      }
-      if (key === 'toString') {
-        return target.valueOf;
-      }
+
       if (key in String.prototype) {
-        return String.prototype[key].bind(target.toString());
+        return String.prototype[key].bind(proxy);
       }
-      return target[key] == null ? '' : target[key];
+
+      return target[key];
     },
     set: (target, key, value) => {
       target[key] = String(value);
     }
   });
-}
 
-StyleMap.prototype.valueOf = function () {
-  var styleMap = this;
-  return Object.keys(styleMap).map(function (key) {
-    return (key === 'cssFloat' ? 'float: ' : hyphenCase(key) + ': ') + styleMap[key];
-  }).join('; ');
-};
+  return proxy;
+}
 
 function getSibling (node, step) {
   var silbings = node.parentNode && node.parentNode.childNodes;
   var index = silbings && silbings.indexOf(node);
 
-  return silbings && index > -1 ? silbings[index + step] : null;
+  return silbings[index + step] || null;
 }
 
 function DocumentFragment () {

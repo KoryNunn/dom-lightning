@@ -1,22 +1,16 @@
-[1]: https://badgen.net/travis/litejs/dom-lite
-[2]: https://travis-ci.org/litejs/dom-lite
-[3]: https://badgen.net/coveralls/c/github/litejs/dom-lite
-[4]: https://coveralls.io/r/litejs/dom-lite
-[5]: https://badgen.net/packagephobia/install/dom-lite
-[6]: https://packagephobia.now.sh/result?p=dom-lite
-[7]: https://badgen.net/badge/icon/Buy%20Me%20A%20Tea/orange?icon=kofi&label
-[8]: https://www.buymeacoffee.com/lauriro
-
-
-DOM lite &ndash; [![Build][1]][2] [![Coverage][3]][4] [![Size][5]][6] [![Buy Me A Tea][7]][8]
+# dom-lightning
 ========
 
-A small DOM implementation
-where most of DOM attributes and methods from document are implemented.
+A refactor of dom-lite with some stuff added.
 
+## Development
 
-Examples
---------
+```bash
+npm i
+npm test
+```
+
+## Examples
 
 ```javascript
 var document = require("dom-lite").document;
@@ -42,22 +36,6 @@ el.querySelectorAll("b");
 // [ "<b>hello world</b>" ]
 ```
 
-
-## External links
-
-[GitHub repo](https://github.com/litejs/dom-lite) |
-[npm package](https://npmjs.org/package/dom-lite) |
-[DOM spec](https://dom.spec.whatwg.org/) |
-[Selectors Level 3](http://www.w3.org/TR/selectors/) |
-[Travis CI](https://travis-ci.org/litejs/dom-lite) |
-[Coveralls coverage](https://coveralls.io/github/litejs/dom-lite)  
-[Coding Style Guidelines](https://github.com/litejs/litejs/wiki/Style-Guidelines) |
-[Buy Me A Tea][8]
-
-
 ## Licence
 
-Copyright (c) 2014-2020 Lauri Rooden &lt;lauri@rooden.ee&gt;  
-[The MIT License](http://lauri.rooden.ee/mit-license.txt)
-
-
+[The MIT License](https://opensource.org/licenses/MIT)

@@ -1,14 +1,11 @@
 {
-  "name": "dom-lite",
-  "version": "20.2.0",
+  "name": "dom-lightning",
+  "version": "1.0.0",
   "license": "MIT",
-  "author": "Lauri Rooden <lauri@rooden.ee>",
+  "author": "Kory Nunn <knunn187@gmail.com>",
   "description": "A small DOM implementation",
   "keywords": [
-    "browser",
-    "document",
-    "dom",
-    "litejs"
+    "dom"
   ],
   "main": "index.js",
   "readmeFilename": "README.md",
@@ -16,16 +13,20 @@
     "index.js"
   ],
   "scripts": {
-    "test": "node test"
+    "lint": "semistandard",
+    "unit": "c8 --check-coverage --lines 100 node test",
+    "test": "npm run unit && npm run lint"
   },
-  "repository": "git://github.com/litejs/dom-lite.git",
+  "repository": "git://github.com/korynunn/dom-lightning.git",
   "bugs": {
-    "url": "https://github.com/litejs/dom-lite/issues"
+    "url": "https://github.com/korynunn/dom-lightning/issues"
   },
   "dependencies": {
     "selector-lite": "20.2.0"
   },
   "devDependencies": {
+    "c8": "^7.1.0",
+    "semistandard": "^14.2.0",
     "tape": "^4.13.2"
   }
 }

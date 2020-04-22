@@ -12,6 +12,10 @@ test('document is a Document', function (t) {
 });
 
 test('can create nodes', function (t) {
+  t.throws(function () {
+    DOM.Node();
+  });
+
   var el;
 
   el = document.createElement('h1');
@@ -79,6 +83,29 @@ test('can create elements with namespace', function (t) {
   t.end();
 });
 
+test('can set style parameters', function (t) {
+  var el = document.createElement('div');
+
+  t.equal(el.hasAttribute('style'), false);
+  t.equal(el.hasAttribute('Style'), false);
+
+  el.style = 'top: 1px; background-color: red; float: right';
+  t.equal(el.hasAttribute('style'), true);
+  t.equal(el.hasAttribute('Style'), true);
+  t.equal(el.style.top, '1px');
+  t.equal(el.style.cssFloat, 'right');
+  t.equal(el.style.backgroundColor, 'red');
+  t.deepEqual(el.style.split(), ['top: 1px; background-color: red; float: right']);
+
+  el.style.backgroundColor = 'blue';
+  el.style.cssFloat = 'left';
+
+  t.equal(el.style.top, '1px');
+  t.equal(el.style.backgroundColor, 'blue');
+  t.equal(el.style + '', 'top: 1px; background-color: blue; float: left');
+  t.end();
+});
+
 test('can clone HTMLElements', function (t) {
   var el = document.createElement('a');
 
@@ -105,33 +132,7 @@ test('can clone HTMLElements', function (t) {
   testAttr('href', '#123');
   testAttr('href', 'http://example.com');
 
-  t.end();
-});
-
-test('can set style parameters', function (t) {
-  var el = document.createElement('div');
-
-  t.equal(el.hasAttribute('style'), false);
-  t.equal(el.hasAttribute('Style'), false);
-
-  el.style = 'top: 1px; background-color: red; float: right';
-  t.equal(el.hasAttribute('style'), true);
-  t.equal(el.hasAttribute('Style'), true);
-  t.equal(el.style.top, '1px');
-  t.equal(el.style.cssFloat, 'right');
-  t.equal(el.style.backgroundColor, 'red');
-
-  el.style.backgroundColor = 'blue';
-  el.style.cssFloat = 'left';
-
-  t.equal(el.style.top, '1px');
-  t.equal(el.style.backgroundColor, 'blue');
-  t.equal(el.style + '', 'top: 1px; background-color: blue; float: left');
-  t.end();
-});
-
-test('can clone HTMLElements', function (t) {
-  var el, clone, deepClone;
+  var clone, deepClone;
 
   el = document.createElement('h1');
   el.appendChild(document.createElement('img'));
@@ -203,9 +204,27 @@ test('can do stuff', function (t) {
   t.equal(div.firstChild.tagName, 'DIV');
   t.equal(div.firstChild.firstChild.tagName, 'SPAN');
 
+  t.equal(div.firstChild.firstChild.nextSibling, div.firstChild.childNodes[1]);
+  t.equal(div.firstChild.firstChild.previousSibling, null);
+  t.equal(div.firstChild.lastChild.previousSibling, div.firstChild.childNodes[1]);
+  t.equal(div.firstChild.lastChild.nextSibling, null);
+
   t.equal(div.querySelectorAll('span').length, 2);
 
   t.end();
+});
+
+test('can do events', function (t) {
+  t.plan(1);
+  var div = document.createElement('div');
+
+  function handler () {
+    t.pass();
+  }
+
+  div.addEventListener('click', handler);
+  div.click();
+  div.removeEventListener('click', handler);
 });
 
 function testNode (t, mask, node) {
@@ -225,6 +244,11 @@ function testNode (t, mask, node) {
   t.equal('' + node, mask.replace('%s', '<h2></h2><h1>Head</h1>'));
 
   t.equal(node.removeChild(h1), h1);
+
+  node.appendChild(h1);
+  h1.remove();
+  t.deepEqual(node.childNodes, [h2]);
+
   t.equal('' + node, mask.replace('%s', '<h2></h2>'));
 
   t.throws(function () {
@@ -251,6 +275,12 @@ function testNode (t, mask, node) {
   p.removeChild(p.firstChild);
   t.equal(p.firstChild, null);
   t.equal(p.lastChild, null);
+
+  t.equal(node.value, '');
+  node.value = 1;
+  t.equal(node.value, '1');
+  node.value = null;
+  t.equal(node.value, '');
 }
 
 test('HTMLElement', function (t) {
