@@ -1,6 +1,6 @@
 {
   "name": "dom-lightning",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "author": "Kory Nunn <knunn187@gmail.com>",
   "description": "A small DOM implementation",
