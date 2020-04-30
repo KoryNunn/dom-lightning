@@ -298,11 +298,7 @@ function StyleMap (style) {
         return toPrimitive.bind(target);
       }
 
-      if (key in String.prototype) {
-        return String.prototype[key].bind(proxy);
-      }
-
-      return target[key];
+      return target[key] || '';
     },
     set: (target, key, value) => {
       target[key] = String(value);

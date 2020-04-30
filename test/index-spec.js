@@ -92,10 +92,11 @@ test('can set style parameters', function (t) {
   el.style = 'top: 1px; background-color: red; float: right';
   t.equal(el.hasAttribute('style'), true);
   t.equal(el.hasAttribute('Style'), true);
+  t.equal(el.style.background, '');
   t.equal(el.style.top, '1px');
   t.equal(el.style.cssFloat, 'right');
   t.equal(el.style.backgroundColor, 'red');
-  t.deepEqual(el.style.split(), ['top: 1px; background-color: red; float: right']);
+  t.deepEqual(String(el.style).split(), ['top: 1px; background-color: red; float: right']);
 
   el.style.backgroundColor = 'blue';
   el.style.cssFloat = 'left';

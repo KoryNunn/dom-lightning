@@ -11,7 +11,8 @@
   "scripts": {
     "lint": "semistandard",
     "unit": "c8 --check-coverage --lines 100 node test",
-    "test": "npm run unit && npm run lint"
+    "test": "npm run unit && npm run lint",
+    "watch-test": "watchify ./test/index.js -o ./test/index.browser.js"
   },
   "repository": {
     "type": "git",
@@ -26,7 +27,8 @@
   "devDependencies": {
     "c8": "^7.1.0",
     "semistandard": "^14.2.0",
-    "tape": "^4.13.2"
+    "tape": "^4.13.2",
+    "watchify": "^3.11.1"
   },
   "homepage": "https://github.com/korynunn/dom-lightning#readme",
   "directories": {
