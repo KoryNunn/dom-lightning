@@ -12,7 +12,7 @@ npm test
 ## Examples
 
 ```javascript
-var document = require("dom-lite").document;
+var document = require("dom-lightning").document;
 
 var el = document.createElement("h1");
 el.id = 123;
