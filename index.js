@@ -20,7 +20,7 @@ var voidElements = {
   WBR: 1
 };
 var hasOwn = Object.prototype.hasOwnProperty;
-function buildQuery(query){
+function buildQuery (query) {
   return Array.isArray(query) ? query.join(',') : query;
 }
 var selector = require('selector-lite');
@@ -169,6 +169,11 @@ Node.prototype = {
   },
   set value (value) {
     this[VALUE] = value == null ? '' : String(value);
+  },
+  contains: function (targetNode) {
+    return this.childNodes && this.childNodes.find(childNode =>
+      childNode === targetNode || childNode.contains(targetNode)
+    );
   },
   hasChildNodes: function () {
     return this.childNodes && this.childNodes.length > 0;

@@ -48,7 +48,8 @@ test('getElementById, getElementsByTagName, getElementsByClassName, querySelecto
   t.deepEqual(document.getElementsByClassName('findme')
     , [el21, el221]);
 
-  t.deepEqual(document.getElementsByClassName(['findme']);
+  t.deepEqual(document.getElementsByClassName(['findme'])
+    , [el21, el221]);
 
   t.deepEqual(document.querySelector('html'), document.documentElement);
   t.deepEqual(document.querySelector('body'), document.body);

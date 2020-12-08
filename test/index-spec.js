@@ -180,12 +180,13 @@ test('can clone Text', function (t) {
   t.end();
 });
 
-test('can do stuff', function (t) {
+test('can do general DOM operations', function (t) {
   var div = document.createElement('div');
   div.className = 'foo bar';
 
   var span = document.createElement('span');
   div.appendChild(span);
+
   span.textContent = 'Hello!';
 
   var html = String(div);
@@ -211,6 +212,22 @@ test('can do stuff', function (t) {
   t.equal(div.firstChild.lastChild.nextSibling, null);
 
   t.equal(div.querySelectorAll('span').length, 2);
+
+  t.end();
+});
+
+test('Node.contains', function (t) {
+  var div = document.createElement('div');
+  div.className = 'foo bar';
+
+  var span = document.createElement('span');
+  div.appendChild(span);
+
+  var heading = document.createElement('h1');
+  span.appendChild(heading);
+
+  t.ok(div.contains(span));
+  t.ok(div.contains(heading));
 
   t.end();
 });
