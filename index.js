@@ -20,6 +20,9 @@ var voidElements = {
   WBR: 1
 };
 var hasOwn = Object.prototype.hasOwnProperty;
+function buildQuery(query){
+  return Array.isArray(query) ? query.join(',') : query;
+}
 var selector = require('selector-lite');
 var elementGetters = {
   getElementById: function (id) {
@@ -28,14 +31,14 @@ var elementGetters = {
   getElementsByTagName: function (tag) {
     return selector.find(this, tag);
   },
-  getElementsByClassName: function (sel) {
-    return selector.find(this, '.' + sel.replace(/\s+/g, '.'));
+  getElementsByClassName: function (query) {
+    return selector.find(this, '.' + buildQuery(query).replace(/\s+/g, '.'));
   },
-  querySelector: function (sel) {
-    return selector.find(this, sel, 1);
+  querySelector: function (query) {
+    return selector.find(this, query, 1);
   },
-  querySelectorAll: function (sel) {
-    return selector.find(this, sel);
+  querySelectorAll: function (query) {
+    return selector.find(this, buildQuery(query));
   }
 };
 
